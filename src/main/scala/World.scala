@@ -1,23 +1,44 @@
-case class Tile(x: Int, y: Int, terrain: Terrain, regionId: String)
+// encapsulates world state information
+case class WorldState(
+  turn      : Int,
+  map       : WorldMap,
+  actors    : Vector[Actor],
+  pops      : Vector[Population],
+  gods      : Vector[God],
+)
+
+object WorldState:
+  def initial(gods: Vector[God], width: Int, height: Int): WorldState =
+    WorldState(
+      turn = 0,
+      map = WorldMap(width, height, Vector.tabulate(height, width) { (y, x) =>
+        Tile(x, y, Void)
+      }),
+      actors = Vector.empty,
+      pops   = Vector.empty,
+      gods = gods
+    )
+
+case class Tile(x: Int, y: Int, terrain: Terrain)
 case class WorldMap(width: Int, height: Int, tiles: Vector[Vector[Tile]])
 
 object AnsiColor:
-  val Reset      = "\u001b[0m"
-  val Black      = "\u001b[30m"
-  val Red        = "\u001b[31m"
-  val Green      = "\u001b[32m"
-  val Yellow     = "\u001b[33m"
-  val Blue       = "\u001b[34m"
-  val Magenta    = "\u001b[35m"
-  val Cyan       = "\u001b[36m"
-  val White      = "\u001b[37m"
-  val BrightBlue = "\u001b[94m"
-  val BrightCyan = "\u001b[96m"
-  val BrightGreen = "\u001b[92m"
-  val BrightYellow = "\u001b[93m"
+  val Reset         = "\u001b[0m"
+  val Black         = "\u001b[30m"
+  val Red           = "\u001b[31m"
+  val Green         = "\u001b[32m"
+  val Yellow        = "\u001b[33m"
+  val Blue          = "\u001b[34m"
+  val Magenta       = "\u001b[35m"
+  val Cyan          = "\u001b[36m"
+  val White         = "\u001b[37m"
+  val BrightBlue    = "\u001b[94m"
+  val BrightCyan    = "\u001b[96m"
+  val BrightGreen   = "\u001b[92m"
+  val BrightYellow  = "\u001b[93m"
   val BrightMagenta = "\u001b[95m"
-  val Gray       = "\u001b[90m"
-  val BrightRed       = "\u001b[91m"
+  val Gray          = "\u001b[90m"
+  val BrightRed     = "\u001b[91m"
 
 def terrainSymbol(terrain: Terrain): String =
   import AnsiColor.*
@@ -53,24 +74,24 @@ extension (map: WorldMap)
       row.map(t => terrainSymbol(t.terrain)).mkString(" ")
     }.mkString("\n")
 
-case class Region(
-  id: String,
-  name: String,
-  traits: Set[RegionTrait],
-  population: Int,
-  dominantReligion: Option[String],
-  stability: Double,
-  prosperity: Double
-)
+extension (world: WorldState)
+  def toAsciiString: String = {
+    val width = world.map.width
+    val height = world.map.height
 
-case class Actor(
-  id: String,
-  name: String,
-  regionId: String,
-  loyalty: Double,
-  allegiance: Option[String], // god ID
-  traits: Set[ActorTrait]
-)
+    def tileChar(tile: Tile): String = {
+      // Find populations on this tile
+      val popsHere = world.pops.filter(p => p.tileX == tile.x && p.tileY == tile.y)
 
-case class WorldEvent(turn: Int, description: String, causedBy: Option[String])
-
+      if popsHere.nonEmpty then
+        "s"
+      else
+        terrainSymbol(tile.terrain)
+    }
+  
+    (0 until height).map { y =>
+      (0 until width).map { x =>
+        tileChar(world.map.tiles(x)(y))
+      }.mkString(" ")
+    }.mkString("\n")
+  }

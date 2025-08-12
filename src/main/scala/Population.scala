@@ -1,18 +1,33 @@
-// represents a large group of people in the game world
-//  this is seperate from individual actors in the world
-//  these simulate groups
-trait Population:
-  def tileX   : Int
-  def tileY   : Int
-  def groups  : Vector[PopulationGroup]
+trait Population extends Actor:
+  def id: String
+  def tileX: Int
+  def tileY: Int
+  def ipPerTurn(state: WorldState): Int
+  def generateIntents(state: WorldState): List[Intent]
 
-// represents information about a group of people in the world
-case class PopulationGroup(
+
+sealed trait Race
+case object Human extends Race
+case object Elf   extends Race
+case object Orc   extends Race
+case object Dwarf extends Race
+  
+val allRaces      = List(Human, Elf, Orc, Dwarf)
+val terrainPrefs  = Map(
+  Human -> List(Plains, Forest),
+  Elf   -> List(Forest),
+  Orc   -> List(Desert),
+  Dwarf -> List(Mountain)
+  )
+case class SeedPopulation(
+  idSuffix: String,
   race    : Race,
   size    : Int,
-  loyalty : Map[String, Double] // percentage (0.0 - 1.0) of size that has allegance to a god
-)
-
-// TODO populate
-enum Race:
-  case Human, Goblin, Orc
+  tileX   : Int,
+  tileY   : Int,
+  loyalty : Map[String, Double] // god_id -> it's influince
+  // TODO ^ there's a better way! 
+  ) extends Population:
+  val id                                  : String = "pop_" + idSuffix
+  def ipPerTurn(state: WorldState)        : Int = 0
+  def generateIntents(state: WorldState)  : List[Intent] = List()

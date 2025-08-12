@@ -1,6 +1,6 @@
 sealed trait Domain
-trait Terrain extends Domain
-trait Concept extends Domain
+trait Terrain   extends Domain
+trait Concept   extends Domain
 
 // terrain types
 case object Void      extends Terrain

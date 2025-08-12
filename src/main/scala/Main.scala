@@ -3,23 +3,41 @@ import scala.io.StdIn.readInt
 
 // world state info
 val gods  = GodRegistry.defaultGods
-var world = WorldState.initial(gods)
+var world = WorldState.initial(gods, 50, 50)
 
 // run the generation state with primordial gods
-def runGenerationStage(turns: Int): Unit = 
-  for (i <- 0 to turns) {
-    print("sim step: ")
-    println(world.turn)
-    println(world.map.toAsciiString)
-    println("\u001b[2J\u001b[H")
-    world = Simulation.simulateTurn(world) 
+def runGenerationStage(turns: Int): Unit =
+  if (world.map.width + world.map.height > 100) {
+      world = Simulation.runPhase(world, Primordial, turns)  
+  } else {
+    for (i <- 0 to turns) {
+      world = Simulation.runPhase(world, Primordial, 1)  
+      println(world.map.toAsciiString)
+      print("sim step: ")
+      println(world.turn)
+    }
   }
-  println("sim complete")
+
+  print("\u001b[2J\u001b[H")
   println(world.map.toAsciiString)
+  println("sim complete")
+
+// seed the world with inital data
+def runHistoricalStage(turns: Int): Unit =
+  for (i <- 0 to turns) {
+    world = Simulation.runPhase(world, Historical, 1)
+  }
+
+  print("\u001b[2J\u001b[H")
+  println(world.toAsciiString)
+  // world.pops.map(println)
+
+// run a simulation of gods, actors, and population interacting in world
+def runPoliticalState(turns: Int): Unit =
+  println()
 
 // sim menu
 @main def godGameSim(): Unit =
-
   print("\u001b[2J\u001b[H")
   var quit = false
   while (!quit) {
@@ -36,7 +54,11 @@ def runGenerationStage(turns: Int): Unit =
       case "gen" => 
         print("number of turns: ")
         runGenerationStage(readInt())
-      case "his" => println("Not Implemented")
+
+      case "his" =>
+        print("unmber of turns: ")
+        runHistoricalStage(readInt())
+
       case "pol" => println("Not Implemented")
       case "man" => println("Not Implemented")
       case "q"   => quit = true

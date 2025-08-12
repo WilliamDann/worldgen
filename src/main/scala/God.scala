@@ -1,43 +1,29 @@
 import scala.util.Random
 
 // a god takes actions (GodIntents) in the world aligned with their reward function
-trait God:
-  def id          : String
-  def name        : String
-  def domain      : Domain
+trait God extends Actor:
+  def id     : String
+  def name   : String
+  def domain : Domain
 
-  def ipPerTurn(state: WorldState): Int
-  def generateIntents(state: WorldState): List[Intent]
-
-// base instance for a god type
-case class BaseGod(
-  id            : String,
-  name          : String,
-  domain        : Domain,
-  ipPerTurnFn   : WorldState => Int,
-  ai            : WorldState => List[Intent]
+// base class for concept gods
+case class ConceptGod(
+  idSuffix        : String,
+  name            : String,
+  domain          : Domain
 ) extends God:
-  def ipPerTurn(state: WorldState): Int = ipPerTurnFn(state)
-  def generateIntents(state: WorldState): List[Intent] = ai(state)
+  val id                                  : String        = "god_" + idSuffix
+  def generateIntents(state: WorldState)  : List[Intent]  = List()
+  def ipPerTurn(state: WorldState)        : Int           = 0
 
 // base class for gods that are able to modify world tiles
 case class PrimordialGod(
-  id            : String,
+  idSuffix      : String,
   name          : String,
   domain        : Terrain,
   ipPerTurn     : Int
 ) extends God:
-  
-  // get coords for tiles around a tile
-  def neighbors(x: Int, y: Int, maxX: Int, maxY: Int): List[(Int, Int)] =
-    List(
-      (x - 1, y), // left
-      (x + 1, y), // right
-      (x, y - 1), // up
-      (x, y + 1)  // down
-    ).filter { case (nx, ny) =>
-      nx >= 0 && nx < maxX && ny >= 0 && ny < maxY
-    }
+  val id : String = "god_" + idSuffix
 
   // generate legal 'moves' for a god
   def generateIntents(state: WorldState): List[Intent] = {

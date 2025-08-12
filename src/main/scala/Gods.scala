@@ -4,9 +4,8 @@ object GodRegistry:
   Plains    -> 10,
   Forest    -> 10,
   Desert    -> 7,
-  Hills     -> 5,
-  Swamp     -> 7,
-  Volcano   -> 2,
+  Swamp     -> 5,
+  Volcano   -> 1,
   Mountain  -> 5,
   Lake      -> 6,
   ).withDefaultValue(0)
@@ -16,10 +15,10 @@ object GodRegistry:
     domain.toString.capitalize
 
   // basic PrimordialGods for terrains
-  val terrainGods: List[PrimordialGod] =
+  val terrainGods: List[God] =
     terrainDomains.map { t =>
       PrimordialGod(
-        id = s"god_of_${t.toString.toLowerCase}",
+        idSuffix = t.toString.toLowerCase,
         name = s"${prettyName(t)}ar",
         domain = t,
         ipPerTurn = ipPerTurn(t)
@@ -27,14 +26,12 @@ object GodRegistry:
     }
 
   // base gods for concepts (can’t spread terrain, maybe control actors later)
-  val conceptGods: List[BaseGod] =
+  val conceptGods: List[God] =
     conceptDomains.map { c =>
-      BaseGod(
-        id = s"god_of_${c.toString.toLowerCase}",
+      ConceptGod(
+        idSuffix = {c.toString.toLowerCase},
         name = s"${prettyName(c)}el",
         domain = c,
-        ipPerTurnFn = _ => 5,
-        ai = _ => Nil  // no behavior yet
       )
     }
 
